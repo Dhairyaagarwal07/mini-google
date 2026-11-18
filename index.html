@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Google - Pre-1998 vs PageRank (1,000,000 Random Surfer Simulation)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-container">
+    <!-- Header with Mini Google branding -->
+    <header class="header">
+      <div class="logo-container">
+        <div class="mini-tag">CLASS ACTIVITY &bull; WEB SEARCH EVOLUTION</div>
+        <h1 class="logo">
+          <span class="g-blue">M</span><span class="g-red">i</span><span class="g-yellow">n</span><span class="g-blue">i</span>
+          <span class="space"></span>
+          <span class="g-blue">G</span><span class="g-red">o</span><span class="g-yellow">o</span><span class="g-blue">g</span><span class="g-green">l</span><span class="g-red">e</span>
+        </h1>
+        <p class="subtitle">
+          How Google conquered the web in 1998: <span class="highlight">Keyword Density vs 1,000,000 Random Surfer PageRank</span>
+        </p>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-box-wrapper">
+        <div class="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" value="pizza" placeholder="Try searching 'pizza', 'food', 'pune'...">
+          <button id="searchBtn" class="search-action-btn">Search</button>
+        </div>
+        <div class="query-chips">
+          <span>Quick queries:</span>
+          <button class="chip active" data-query="pizza">pizza (Classic test)</button>
+          <button class="chip" data-query="pune">pune</button>
+          <button class="chip" data-query="food">food</button>
+          <button class="chip" data-query="canteen">canteen</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Simulation Dashboard & Controls -->
+    <section class="simulation-panel">
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <span class="badge pulse-badge">MONTE CARLO SIMULATOR</span>
+          <h2>Random Surfer Engine (<span id="totalMovesTarget">1,000,000</span> Moves)</h2>
+        </div>
+        <div class="stats-summary">
+          <div class="stat-item">
+            <span class="stat-label">Moves Completed</span>
+            <span class="stat-value" id="currentMovesCounter">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Damping Factor (&alpha;)</span>
+            <span class="stat-value">0.85 (15% Teleport)</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Surfer Status</span>
+            <span class="stat-value status-badge" id="surferStatus">Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        <span class="progress-text" id="progressText">0% Complete (0 / 1,000,000)</span>
+      </div>
+
+      <!-- Control Buttons -->
+      <div class="controls-row">
+        <div class="btn-group-left">
+          <button id="btnRun1M" class="btn btn-primary glow-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Run 1,000,000 Surfer Moves
+          </button>
+          <button id="btnLiveSurfer" class="btn btn-secondary">
+            <span class="indicator-dot"></span>
+            <span id="liveBtnText">Watch Live Animated Surfer</span>
+          </button>
+          <button id="btnReset" class="btn btn-outline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            Reset
+          </button>
+        </div>
+
+        <div class="speed-slider-group" id="speedControlGroup">
+          <label for="speedSlider">Live Speed: <span id="speedValue">50 ms</span></label>
+          <input type="range" id="speedSlider" min="5" max="500" value="50" step="5">
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Visual Split: Web Graph Visualizer & Surfer Path -->
+    <section class="network-section">
+      <div class="network-header">
+        <div class="section-badge">INTERACTIVE HYPERLINK GRAPH</div>
+        <h3>The 6 Pune Websites Hyperlink Graph & Animated Surfer</h3>
+        <p class="network-desc">
+          Green arrows indicate outgoing hyperlinks. The glowing surfer particle explores nodes based on outgoing links (85%) or random teleport (15%). Watch node sizes scale with PageRank!
+        </p>
+      </div>
+
+      <div class="graph-wrapper">
+        <canvas id="networkCanvas"></canvas>
+        <div class="graph-overlay-stats" id="graphOverlayStats">
+          <div class="surfer-current-location">
+            Current Surfer Node: <span id="activeNodeName" class="highlight-node">Node 1: pune-food-guide.com</span>
+          </div>
+          <div class="surfer-last-action" id="lastActionText">Surfer is ready to hop</div>
+        </div>
+        <div class="graph-legend">
+          <div class="legend-item"><span class="legend-color node-normal"></span> Normal Webpage</div>
+          <div class="legend-item"><span class="legend-color node-spam"></span> Spam Site (#6)</div>
+          <div class="legend-item"><span class="legend-color node-star"></span> Authority Hub (#2)</div>
+          <div class="legend-item"><span class="legend-color surfer-dot"></span> Active Surfer</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Comparison: Pre-1998 vs PageRank -->
+    <section class="comparison-section">
+      <div class="section-title-center">
+        <span class="badge">THE GROUNDBREAKING COMPARISON</span>
+        <h2>Search Result Showdown: Query = "<span id="currentSearchDisplay">pizza</span>"</h2>
+        <p>Why search engines pre-1998 broke down on spam, and why Larry Page & Sergey Brin's PageRank revolutionized the world.</p>
+      </div>
+
+      <div class="comparison-grid">
+        <!-- LEFT: Pre-1998 Ranking -->
+        <div class="comparison-card old-era">
+          <div class="card-banner banner-red">
+            <div class="era-tag">PRE-1998 ERA (AltaVista, Lycos, WebCrawler)</div>
+            <h3>Old Way: Keyword Frequency</h3>
+            <p>Ranks purely by how many times the word appears in the page text.</p>
+          </div>
+
+          <div class="flaw-callout">
+            <div class="callout-icon">&times;</div>
+            <div>
+              <strong>Vulnerable to Keyword Spamming!</strong>
+              <span>Webmasters repeated words 100x in white text to manipulate search results.</span>
+            </div>
+          </div>
+
+          <div class="ranking-list" id="oldRankingList">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- RIGHT: 1998+ PageRank (Google) -->
+        <div class="comparison-card new-era">
+          <div class="card-banner banner-blue">
+            <div class="era-tag">1998+ GOOGLE REVOLUTION</div>
+            <h3>New Way: PageRank (1M Random Surfer Moves)</h3>
+            <p>Ranks by link authority &amp; probability of a random surfer landing on the page.</p>
+          </div>
+
+          <div class="success-callout">
+            <div class="callout-icon">&#10003;</div>
+            <div>
+              <strong>Spam Defeated by Web Link Structure!</strong>
+              <span>Even with 10 repeated keywords, site #6 has 0 incoming links. Site #2 wins because everyone points to it!</span>
+            </div>
+          </div>
+
+          <div class="ranking-list" id="newRankingList">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed 6 Websites Roster & Metrics Table -->
+    <section class="roster-section">
+      <div class="section-header-row">
+        <div>
+          <span class="badge">DETAILED TELEMETRY</span>
+          <h3>Websites Dataset & Convergence Breakdown</h3>
+        </div>
+        <div class="tip-text">Click any row to inspect links &amp; text</div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table" id="websitesTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Website URL</th>
+              <th>Content Snippet</th>
+              <th>Keyword Count ("<span class="dynamic-query">pizza</span>")</th>
+              <th>Out Links</th>
+              <th>In Links</th>
+              <th>Surfer Visits (1M)</th>
+              <th>PageRank Probability</th>
+              <th>Pre-1998 Rank</th>
+              <th>PageRank Rank</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Populated via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Deep Dive Educational Explainer -->
+    <section class="educational-section">
+      <div class="edu-grid">
+        <div class="edu-card">
+          <div class="edu-number">01</div>
+          <h4>The Pre-1998 Flaw</h4>
+          <p>
+            Before Google, search engines like AltaVista and Yahoo looked at content keyword density.
+            Website <strong>pizza-pizza-pizza.com</strong> simply repeats the keyword 10 times with zero helpful info.
+            Old engines rewarded this spam with the <strong>#1 spot</strong>.
+          </p>
+        </div>
+
+        <div class="edu-card">
+          <div class="edu-number">02</div>
+          <h4>The Random Surfer Model</h4>
+          <p>
+            Imagine a person browsing the web who randomly clicks hyperlinks on a page (85% probability) or types a new URL at random (15% teleport).
+            Simulating this across <strong>1,000,000 steps</strong> reveals where people naturally end up.
+          </p>
+        </div>
+
+        <div class="edu-card">
+          <div class="edu-number">03</div>
+          <h4>Why best-pizza-pune.com Wins</h4>
+          <p>
+            Sites #1, #3, #4, and #5 all link to <strong>best-pizza-pune.com</strong> (Site 2).
+            Inbound links act as peer votes of trust. Site 2 accumulates high PageRank authority, making it Google's undisputed #1 recommendation.
+          </p>
+        </div>
+
+        <div class="edu-card">
+          <div class="edu-number">04</div>
+          <h4>Mathematical Formula</h4>
+          <div class="math-box">
+            <code>PR(u) = (1-d)/N + d &times; &sum; [ PR(v) / L(v) ]</code>
+          </div>
+          <p>
+            Where <code>d = 0.85</code>, <code>N = 6</code> pages, and <code>v &in; In(u)</code>.
+            Our Monte Carlo random surfer simulation empirically matches this mathematical stationary eigenvector!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Mini Google Simulation &bull; Class Activity Demo &bull; Built with HTML5 Canvas &amp; Vanilla JavaScript</p>
+    </footer>
+  </div>
+
+  <!-- Webpage Inspector Modal -->
+  <div class="modal-overlay" id="siteModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-browser-chrome">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="address-bar" id="modalAddressBar">http://best-pizza-pune.com</span>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
